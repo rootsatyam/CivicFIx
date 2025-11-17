@@ -47,16 +47,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <div 
-      className="min-h-screen text-white"
-      style={{
-        backgroundImage: `url('/city-issues-bg.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      <div className="fixed inset-0 bg-slate-900/85 backdrop-blur-[2px] z-0"></div>
+    <div className="min-h-screen text-white">
 
       <header className="relative z-10 bg-black/20 backdrop-blur-md border-b border-white/10 sticky top-0">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">

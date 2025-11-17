@@ -41,16 +41,7 @@ export default function RewardsPage() {
   const levelTitle = currentLevel === 1 ? "Citizen Observer" : currentLevel === 2 ? "Community Activist" : "Civic Champion";
 
   return (
-    <div 
-      className="min-h-screen text-white"
-      style={{
-        backgroundImage: `url('/city-issues-bg.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-0"></div>
+    <div className="min-h-screen text-white">
 
       {/* HEADER */}
       <header className="relative z-10 bg-black/20 backdrop-blur-md border-b border-white/10 sticky top-0">

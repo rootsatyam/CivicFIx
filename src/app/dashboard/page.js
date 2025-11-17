@@ -70,16 +70,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen text-white"
-      style={{
-        backgroundImage: `url('/city-issues-bg.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      <div className="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-0"></div>
+    <div className="min-h-screen text-white">
 
       {/* HEADER */}
       <header className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md">

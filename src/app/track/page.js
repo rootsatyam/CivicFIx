@@ -51,17 +51,7 @@ export default function TrackIssuesPage() {
   };
 
   return (
-    <div 
-      className="min-h-screen p-4 md:p-8"
-      style={{
-        backgroundImage: `url('/city-issues-bg.jpg')`, // Using your city image
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed' // Parallax effect
-      }}
-    >
-      {/* Dark Overlay for readability */}
-      <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-[3px] z-0"></div>
+    <div className="min-h-screen p-4 md:p-8">
 
       <div className="relative z-10 max-w-4xl mx-auto">
         

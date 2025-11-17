@@ -54,19 +54,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white relative overflow-hidden font-sans selection:bg-blue-500 selection:text-white">
-      
-      {/* BACKGROUND IMAGE LAYER */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url('/city-issues-bg.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed', // Parallax feel
-        }}
-      />
-      {/* Dark Gradient Overlay */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-slate-900/90 via-slate-900/80 to-slate-900"></div>
 
       {/* --- NAVIGATION (Glass) --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
