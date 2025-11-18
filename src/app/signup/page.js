@@ -1,5 +1,3 @@
-// File: app/signup/page.js
-
 'use client';
 
 import { useState } from 'react';
@@ -17,6 +15,7 @@ export default function SignUpPage() {
   });
   const [role, setRole] = useState('citizen'); 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null); // For validation errors
   const router = useRouter();
   
   const supabase = createBrowserClient(
@@ -26,95 +25,103 @@ export default function SignUpPage() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(null); // Clear error when typing
+  };
+
+  // LOGIC: Indian Mobile Validation
+  const isValidIndianMobile = (number) => {
+    const regex = /^[6-9]\d{9}$/; // Starts with 6-9, total 10 digits
+    return regex.test(number);
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // 1. Sign Up
-    const { data, error } = await supabase.auth.signUp({
+    // 1. Validate Mobile
+    if (!isValidIndianMobile(formData.mobile)) {
+        setError("Please enter a valid 10-digit Indian mobile number.");
+        setLoading(false);
+        return;
+    }
+
+    // 2. Validate Password Length
+    if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        setLoading(false);
+        return;
+    }
+
+    const { data, error: authError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
-        // We also save this in metadata as a backup
-        data: {
-          full_name: formData.fullName,
-          username: formData.username,
-        }
+        // This ensures the redirect goes to the LIVE site, not localhost
+        emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
 
-    if (error) {
-      alert(error.message);
+    if (authError) {
+      setError(authError.message);
       setLoading(false);
       return;
     }
 
-    // 2. Force Save Profile Data (Using Upsert to fix race conditions)
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({  // <--- CHANGED FROM update TO upsert
-          id: data.user.id, // Explicitly link the ID
+      // Create Profile
+      await supabase.from('profiles').upsert({
+          id: data.user.id,
           full_name: formData.fullName,
           mobile: formData.mobile,
           username: formData.username,
           role: role === 'authority' ? 'admin' : 'citizen',
-          points: 0 // Default points
-        });
+          points: 0
+      });
 
-      if (profileError) {
-        console.error('Error saving profile:', profileError);
-        // Even if this fails, we let them through, but log it.
+      // CHECK: If email confirmation is required (session is null)
+      if (!data.session) {
+          alert("Account created! Please check your email to verify your account before logging in.");
+          router.push('/login');
+      } else {
+          if (role === 'authority') router.push('/admin');
+          else router.push('/dashboard');
       }
-      
-      if (role === 'authority') router.push('/admin');
-      else router.push('/dashboard');
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4"> 
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <div className="fixed inset-0 z-0">
+        <img src="/city-issues-bg.jpg" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+      </div>
 
       <div className="relative z-10 w-full max-w-md p-8 space-y-6 rounded-2xl shadow-2xl bg-white/10 backdrop-blur-xl border border-white/20">
-        
         <div className="text-center mb-4">
-          <h2 className="text-3xl font-bold text-white drop-shadow-md">Join  CivicFix</h2>
-          <p className="text-white/80 mt-2">Create your account</p>
+          <h2 className="text-3xl font-bold text-white drop-shadow-md">Join CivicFix</h2>
+          <p className="text-white/80 mt-2">Create your citizen profile</p>
         </div>
 
+        {/* Role Toggle */}
         <div className="flex bg-black/20 p-1 rounded-xl border border-white/10">
-            <button 
-                type="button"
-                onClick={() => setRole('citizen')}
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
-                    role === 'citizen' 
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' 
-                    : 'text-white/60 hover:text-white'
-                }`}
-            >
-                Citizen
-            </button>
-            <button 
-                type="button"
-                onClick={() => setRole('authority')}
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
-                    role === 'authority' 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg' 
-                    : 'text-white/60 hover:text-white'
-                }`}
-            >
-                Authority
-            </button>
+            <button type="button" onClick={() => setRole('citizen')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${role === 'citizen' ? 'bg-blue-600 text-white shadow-lg' : 'text-white/60'}`}>Citizen</button>
+            <button type="button" onClick={() => setRole('authority')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${role === 'authority' ? 'bg-red-600 text-white shadow-lg' : 'text-white/60'}`}>Authority</button>
         </div>
+
+        {/* Error Message Box */}
+        {error && (
+            <div className="bg-red-500/20 border border-red-500/50 p-3 rounded-lg text-center">
+                <p className="text-white text-sm font-medium">{error}</p>
+            </div>
+        )}
 
         <form onSubmit={handleSignUp} className="space-y-4">
           {[
             { name: 'fullName', placeholder: 'Full Name', type: 'text' },
             { name: 'username', placeholder: 'Choose Username', type: 'text' },
-            { name: 'mobile', placeholder: 'Mobile Number', type: 'tel' },
+            { name: 'mobile', placeholder: 'Mobile Number (10 digits)', type: 'tel' },
             { name: 'email', placeholder: 'Email Address', type: 'email' },
             { name: 'password', placeholder: 'Password', type: 'password' }
           ].map((field) => (
@@ -124,34 +131,21 @@ export default function SignUpPage() {
                     type={field.type}
                     placeholder={field.placeholder}
                     required
+                    maxLength={field.name === 'mobile' ? 10 : 50}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition duration-200"
+                    className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition"
                 />
             </div>
           ))}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 text-lg font-bold text-white rounded-xl shadow-lg hover:scale-[1.02] transition transform disabled:opacity-50
-                ${role === 'authority' 
-                  ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:shadow-red-500/30' 
-                  : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-blue-500/30'}
-            `}
-          >
-            {loading ? 'Creating...' : 'Sign Up'}
+          <button type="submit" disabled={loading} className={`w-full py-3 text-lg font-bold text-white rounded-xl shadow-lg hover:scale-[1.02] transition transform disabled:opacity-50 ${role === 'authority' ? 'bg-red-600' : 'bg-blue-600'}`}>
+            {loading ? 'Processing...' : 'Sign Up'}
           </button>
         </form>
 
         <div className="text-center">
-          <p className="text-white/70 text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="font-bold text-white hover:text-blue-300 transition underline decoration-blue-400 underline-offset-4">
-              Log In
-            </Link>
-          </p>
+          <p className="text-white/70 text-sm">Already have an account? <Link href="/login" className="font-bold text-white hover:underline">Log In</Link></p>
         </div>
-
       </div>
     </div>
   );
