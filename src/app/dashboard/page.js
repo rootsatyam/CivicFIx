@@ -1,5 +1,3 @@
-// File: app/dashboard/page.js
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,8 +12,9 @@ export default function DashboardPage() {
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [userEmail, setUserEmail] = useState('');
-  const [username, setUsername] = useState(''); // NEW STATE
+  // NEW: State for Username and Full Name
+  const [profile, setProfile] = useState({ username: '', full_name: '', email: '' });
+  
   const [stats, setStats] = useState({ resolved: 0, pending: 0 });
   const [myIssues, setMyIssues] = useState([]);
 
@@ -29,16 +28,20 @@ export default function DashboardPage() {
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) { router.push('/login'); return; }
-      
-      // FETCH PROFILE to get USERNAME
-      const { data: profile } = await supabase
+
+      // 1. GET PROFILE DATA (Username, Name)
+      const { data: userProfile } = await supabase
         .from('profiles')
-        .select('username')
+        .select('username, full_name, email')
         .eq('id', user.id)
         .single();
-        
-      setUsername(profile?.username || 'Citizen'); // Set the Real Username
-      setUserEmail(user.email);
+
+      // Set Profile State (Fallback to email if username is missing)
+      setProfile({
+          username: userProfile?.username || user.email.split('@')[0],
+          full_name: userProfile?.full_name || 'Citizen',
+          email: user.email
+      });
 
       const { count: resolvedCount } = await supabase.from('issues').select('*', { count: 'exact', head: true }).eq('status', 'Resolved');
       const { count: pendingCount } = await supabase.from('issues').select('*', { count: 'exact', head: true }).neq('status', 'Resolved');
@@ -46,7 +49,7 @@ export default function DashboardPage() {
       const { data: issuesData } = await supabase
         .from('issues')
         .select('*')
-        .eq('submitted_by', user.id) // Show MY issues in the mini-list
+        .eq('submitted_by', user.id)
         .order('created_at', { ascending: false })
         .limit(3);
 
@@ -70,31 +73,42 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-white" style={{ backgroundImage: `url('/city-issues-bg.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+      <div className="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-0"></div>
 
       {/* HEADER */}
       <header className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/50">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
                     <span className="font-bold text-sm">C</span>
                 </div>
                 <span className="font-bold text-xl tracking-tight">CivicFix</span>
             </div>
-            <button onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }} className="text-sm text-red-400 hover:text-red-300 font-medium transition">
-                Sign Out
-            </button>
-        </div>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center bg-white/10 px-3 py-1 rounded-full border border-white/10">
+                <div className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold uppercase">
+                  {profile.username.charAt(0)}
+                </div>
+                {/* SHOW USERNAME HERE */}
+                <span className="ml-2 text-sm font-medium text-white/90">@{profile.username}</span>
+              </div>
+              <button onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }} className="text-sm text-red-400 hover:text-red-300 font-medium transition">Sign Out</button>
+            </div>
+          </div>
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
         
         {/* WELCOME SECTION */}
         <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white">Welcome Back, {username}.</h2>
+            {/* SHOW FULL NAME HERE */}
+            <h2 className="text-3xl font-bold text-white">Welcome Back, {profile.full_name}.</h2>
             <p className="text-slate-400">Here is what's happening in your city today.</p>
         </div>
 
+        {/* ... REST OF DASHBOARD CODE (Same as before) ... */}
+        {/* Copy the rest of your Dashboard JSX here (Buttons, Stats, List) exactly as it was */}
         <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
             
             {/* STATS ROW */}
@@ -107,11 +121,7 @@ export default function DashboardPage() {
             <h3 className="text-white/60 text-xs font-bold uppercase tracking-wider mb-4">Quick Actions</h3>
             <motion.div variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }} className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
                 
-                {/* Emergency Button - Special Style */}
-                <button 
-                    onClick={() => openReport(true)}
-                    className="col-span-2 md:col-span-1 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-red-600 to-red-800 text-white rounded-2xl shadow-lg shadow-red-900/50 hover:scale-[1.02] transition border border-red-500/50"
-                >
+                <button onClick={() => openReport(true)} className="col-span-2 md:col-span-1 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-red-600 to-red-800 text-white rounded-2xl shadow-lg shadow-red-900/50 hover:scale-[1.02] transition border border-red-500/50">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-2 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     <span className="font-bold text-xs uppercase tracking-wider">Emergency</span>
                 </button>
@@ -119,7 +129,7 @@ export default function DashboardPage() {
                 <DashboardButton label="Report" onClick={() => openReport(false)} icon={<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />} color="bg-white/10 hover:bg-blue-600/80" />
                 <DashboardButton label="My Track" onClick={() => router.push('/track')} icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />} color="bg-white/10 hover:bg-green-600/80" />
                 <DashboardButton label="Community" onClick={() => router.push('/community')} icon={<path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a3 3 0 01-3.356-3.143V6a3 3 0 013-3h12a3 3 0 013 3v6c0 1.261-.42 2.417-1.144 3.357m-11.212 0A3 3 0 015.644 13H4a3 3 0 01-3-3V6a3 3 0 013-3h12a3 3 0 013 3v4" />} color="bg-white/10 hover:bg-purple-600/80" />
-                <DashboardButton label="Rewards" onClick={() => router.push('/rewards')} icon={<path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2z" />} color="bg-white/10 hover:bg-yellow-600/80" />
+                <DashboardButton label="Rewards" onClick={() => router.push('/rewards')} icon={<path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM12 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2z" />} color="bg-white/10 hover:bg-yellow-600/80" />
             </motion.div>
 
             {/* RECENT ACTIVITY LIST */}
@@ -157,7 +167,6 @@ export default function DashboardPage() {
   );
 }
 
-// Sub-components
 function DashboardButton({ color, label, onClick, icon }) {
   return (
     <button onClick={onClick} className={`flex flex-col items-center justify-center p-4 ${color} text-white rounded-2xl shadow-lg transition transform hover:scale-105 border border-white/5 backdrop-blur-sm`}>

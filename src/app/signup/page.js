@@ -60,8 +60,9 @@ export default function SignUpPage() {
     setLoading(true);
     setError(null);
 
+    // Validations
     if (!isValidIndianMobile(formData.mobile)) {
-        setError("Please enter a valid 10-digit Indian mobile number.");
+        setError("Please enter a valid 10-digit Indian mobile number (starts with 6-9).");
         setLoading(false);
         return;
     }
@@ -93,6 +94,7 @@ export default function SignUpPage() {
           points: 0
       });
 
+      // If session exists (auto-confirm on), redirect. Else wait.
       if (data.session) {
           if (role === 'authority') router.push('/admin');
           else router.push('/dashboard');
@@ -103,15 +105,19 @@ export default function SignUpPage() {
     setLoading(false);
   };
 
+  // SHARED STYLES (Matches Login Page exactly)
+  const glassCard = "relative z-10 w-full max-w-md p-8 space-y-6 rounded-2xl shadow-2xl bg-white/10 backdrop-blur-xl border border-white/20 overflow-hidden transition-all duration-500";
+  const inputStyle = "w-full px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/40 transition duration-200";
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
-      {/* The background is handled by layout.js, this div centers the content */}
+      {/* Background handled by layout.js */}
       
-      <div className="relative z-10 w-full max-w-md p-8 space-y-6 rounded-2xl shadow-2xl bg-white/10 backdrop-blur-xl border border-white/20 overflow-hidden transition-all duration-500">
+      <div className={glassCard}>
         
         <AnimatePresence mode='wait'>
             
-            {/* --- VIEW 1: WAITING FOR VERIFICATION (Glass Style) --- */}
+            {/* --- VIEW 1: WAITING FOR VERIFICATION --- */}
             {verificationPending ? (
                 <motion.div 
                     key="waiting"
@@ -120,7 +126,6 @@ export default function SignUpPage() {
                     exit={{ opacity: 0, y: -20 }}
                     className="text-center space-y-8 py-6"
                 >
-                    {/* Pulsing Icon */}
                     <div className="relative">
                         <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 animate-pulse"></div>
                         <div className="relative w-24 h-24 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 border border-white/10 rounded-full flex items-center justify-center mx-auto">
@@ -138,7 +143,6 @@ export default function SignUpPage() {
                         </p>
                     </div>
 
-                    {/* Modern Loading Indicator */}
                     <div className="flex items-center justify-center gap-3">
                         <span className="relative flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -148,17 +152,14 @@ export default function SignUpPage() {
                     </div>
 
                     <div className="pt-4">
-                         <button 
-                            onClick={() => window.location.reload()}
-                            className="text-white/40 hover:text-white text-xs hover:underline transition"
-                         >
+                         <button onClick={() => window.location.reload()} className="text-white/40 hover:text-white text-xs hover:underline transition">
                             Verified? Click to refresh
                          </button>
                     </div>
                 </motion.div>
             ) : (
 
-                /* --- VIEW 2: SIGNUP FORM (Glass Style) --- */
+                /* --- VIEW 2: SIGNUP FORM --- */
                 <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     
                     <div className="text-center mb-6">
@@ -175,50 +176,36 @@ export default function SignUpPage() {
                     {error && <div className="bg-red-500/20 border border-red-500/50 p-3 rounded-lg text-center text-white text-sm mb-4 backdrop-blur-md">{error}</div>}
 
                     <form onSubmit={handleSignUp} className="space-y-4">
-                        {/* Inputs with Dark Glass Style */}
-                        {['fullName', 'username'].map((key) => (
-                            <div key={key}>
-                                <input 
-                                    name={key} 
-                                    type="text" 
-                                    placeholder={key === 'fullName' ? 'Full Name' : 'Choose Username'} 
-                                    required 
-                                    onChange={handleChange} 
-                                    className="w-full px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/40 transition duration-200" 
-                                />
-                            </div>
-                        ))}
+                        
+                        {/* Full Name */}
+                        <div>
+                            <input name="fullName" type="text" placeholder="Full Name" required onChange={handleChange} className={inputStyle} />
+                        </div>
+
+                        {/* Username */}
+                        <div>
+                             <input name="username" type="text" placeholder="Choose Username" required onChange={handleChange} className={inputStyle} />
+                        </div>
 
                         {/* Mobile */}
-                        <input 
-                            name="mobile" 
-                            type="tel" 
-                            placeholder="Mobile Number (10 digits)" 
-                            maxLength={10} 
-                            required 
-                            onChange={handleChange} 
-                            className="w-full px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/40 transition duration-200" 
-                        />
+                        <div>
+                            <input name="mobile" type="tel" placeholder="Mobile Number (10 digits)" maxLength={10} required onChange={handleChange} className={inputStyle} />
+                        </div>
 
                         {/* Email */}
-                        <input 
-                            name="email" 
-                            type="email" 
-                            placeholder="Email Address" 
-                            required 
-                            onChange={handleChange} 
-                            className="w-full px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/40 transition duration-200" 
-                        />
+                        <div>
+                             <input name="email" type="email" placeholder="Email Address" required onChange={handleChange} className={inputStyle} />
+                        </div>
 
                         {/* Password with Eye */}
                         <div className="relative">
                             <input 
                                 name="password" 
                                 type={showPassword ? "text" : "password"} 
-                                placeholder="Password" 
+                                placeholder="Password (min 6 chars)" 
                                 required 
                                 onChange={handleChange} 
-                                className="w-full px-4 py-3.5 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/40 transition duration-200 pr-10" 
+                                className={`${inputStyle} pr-10`} 
                             />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-4 text-white/50 hover:text-white transition">
                                 {showPassword ? (
