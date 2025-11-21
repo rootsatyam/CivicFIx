@@ -6,6 +6,19 @@ import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 
+/**
+ * The User Profile Page component.
+ *
+ * This page allows users to view and edit their profile information.
+ * Features include:
+ * - Viewing profile details (Avatar, Name, Username, Email, Mobile, Points).
+ * - Editing editable fields (Full Name, Username, Mobile).
+ * - Uploading a new avatar image.
+ * - Viewing civic impact stats (Points, Level).
+ *
+ * @component
+ * @returns {JSX.Element} The rendered ProfilePage component.
+ */
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -22,6 +35,11 @@ export default function ProfilePage() {
   );
 
   // 1. Fetch Profile
+  /**
+   * Fetches the user's profile data from Supabase.
+   *
+   * @async
+   */
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -44,6 +62,13 @@ export default function ProfilePage() {
   }, []);
 
   // 2. Handle Updates
+  /**
+   * Updates the user's profile information in Supabase.
+   *
+   * @async
+   * @function handleUpdate
+   * @returns {Promise<void>}
+   */
   const handleUpdate = async () => {
     setLoading(true);
     const { error } = await supabase
@@ -64,6 +89,16 @@ export default function ProfilePage() {
   };
 
   // 3. Handle Avatar Upload
+  /**
+   * Handles the upload of a new avatar image.
+   *
+   * Uploads the image to Supabase Storage and updates the user's profile with the new URL.
+   *
+   * @async
+   * @function handleAvatarUpload
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The file input change event.
+   * @returns {Promise<void>}
+   */
   const handleAvatarUpload = async (e) => {
     try {
       setUploading(true);

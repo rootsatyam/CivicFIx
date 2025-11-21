@@ -4,6 +4,17 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+/**
+ * A responsive bottom navigation component for mobile devices.
+ *
+ * This component renders a fixed bottom navigation bar that provides quick access
+ * to the main sections of the application: Home, Track, Feed, and Profile.
+ * It conditionally renders based on the current pathname, hiding itself on
+ * login, signup, and landing pages.
+ *
+ * @component
+ * @returns {JSX.Element|null} The rendered MobileNav component, or null if on an excluded page.
+ */
 export default function MobileNav() {
   const router = useRouter();
   const pathname = usePathname();

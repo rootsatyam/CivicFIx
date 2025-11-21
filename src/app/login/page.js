@@ -5,6 +5,20 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+/**
+ * The Login Page component.
+ *
+ * This component handles user authentication, including:
+ * - Logging in with email and password.
+ * - Role selection (Citizen vs. Authority) for visual context (though logic might be unified).
+ * - Password visibility toggle.
+ * - Password reset functionality.
+ * - Resending confirmation emails.
+ * - Redirecting users based on their role after successful login.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered LoginPage component.
+ */
 export default function LoginPage() {
   const [view, setView] = useState('login'); 
   const [email, setEmail] = useState('');
@@ -22,6 +36,18 @@ export default function LoginPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Handles the login form submission.
+   *
+   * Authenticates the user using Supabase Auth. If successful,
+   * fetches the user's profile to determine their role and redirects
+   * them to the appropriate dashboard (Admin or Citizen).
+   *
+   * @async
+   * @function handleLogin
+   * @param {React.FormEvent} e - The form event.
+   * @returns {Promise<void>}
+   */
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -42,6 +68,17 @@ export default function LoginPage() {
     }
   };
 
+  /**
+   * Handles password reset or resending confirmation emails.
+   *
+   * Depending on the current view state ('forgot' or 'resend'), it either
+   * sends a password reset email or resends the signup confirmation email.
+   *
+   * @async
+   * @function handleResetOrResend
+   * @param {React.FormEvent} e - The form event.
+   * @returns {Promise<void>}
+   */
   const handleResetOrResend = async (e) => {
     e.preventDefault();
     setLoading(true);

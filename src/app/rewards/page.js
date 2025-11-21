@@ -7,6 +7,20 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
+/**
+ * The Rewards Page component.
+ *
+ * This page displays the user's achievements, points, and badges.
+ * It gamifies the civic participation by rewarding users for reporting and validating issues.
+ *
+ * Features:
+ * - Displays total points and current level/rank.
+ * - Shows a progress bar to the next level.
+ * - Lists earned and unearned badges.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered RewardsPage component.
+ */
 export default function RewardsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -18,6 +32,11 @@ export default function RewardsPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Fetches the user's points and badges from Supabase.
+   *
+   * @async
+   */
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -109,7 +128,17 @@ export default function RewardsPage() {
   );
 }
 
-// Dark Glass Badge Card
+/**
+ * A reusable card component for displaying badges.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.title - The title of the badge.
+ * @param {string} props.desc - The description of how to earn the badge.
+ * @param {React.ReactNode} props.icon - The icon to display.
+ * @param {boolean} props.earned - Whether the user has earned this badge.
+ * @returns {JSX.Element} The rendered BadgeCard component.
+ */
 function BadgeCard({ title, desc, icon, earned }) {
     return (
         <motion.div 

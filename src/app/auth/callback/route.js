@@ -4,6 +4,19 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+/**
+ * Handles the OAuth callback from Supabase Auth.
+ *
+ * This route is hit when a user clicks a confirmation link in their email
+ * or completes an OAuth flow. It exchanges the authorization code for a
+ * user session, sets the session cookies, and redirects the user to the
+ * intended destination (or the dashboard by default).
+ *
+ * @async
+ * @function GET
+ * @param {Request} request - The incoming HTTP request.
+ * @returns {Promise<NextResponse>} The response redirecting the user.
+ */
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');

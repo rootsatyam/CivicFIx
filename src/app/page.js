@@ -8,6 +8,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
+/**
+ * The Landing Page component.
+ *
+ * This is the entry point of the application for unauthenticated users.
+ * It displays a hero section, real-time statistics about the platform's usage,
+ * an explanation of how the application works, and navigation links to login or sign up.
+ *
+ * It automatically redirects authenticated users to the dashboard.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered LandingPage component.
+ */
 export default function LandingPage() {
   const router = useRouter();
   const [stats, setStats] = useState({ users: 0, issues: 0 });
@@ -20,6 +32,14 @@ export default function LandingPage() {
 
   // Fetch REAL Data for the Landing Page
   useEffect(() => {
+    /**
+     * Fetches platform statistics and handles auto-redirect for logged-in users.
+     *
+     * Checks if a user session exists. If so, redirects to the dashboard.
+     * Otherwise, fetches the total count of users and issues from Supabase.
+     *
+     * @async
+     */
     const getStats = async () => {
       // 1. Check if user is logged in (Auto-redirect)
       const { data: { session } } = await supabase.auth.getSession();
@@ -193,6 +213,18 @@ export default function LandingPage() {
 
 // --- SUB COMPONENTS ---
 
+/**
+ * Displays a statistic with an icon, value, and label.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.label - The label description for the statistic.
+ * @param {string|number} props.value - The value to display.
+ * @param {string} props.suffix - A suffix to append to the value (e.g., "+").
+ * @param {React.ReactNode} props.icon - An icon element or string.
+ * @param {boolean} props.loading - Whether the data is currently loading.
+ * @returns {JSX.Element} The rendered StatCard component.
+ */
 function StatCard({ label, value, suffix, icon, loading }) {
     return (
         <div className="bg-white/5 border border-white/10 backdrop-blur-md p-8 rounded-3xl flex flex-col items-center justify-center hover:bg-white/10 transition duration-300 group">
@@ -205,6 +237,17 @@ function StatCard({ label, value, suffix, icon, loading }) {
     );
 }
 
+/**
+ * Displays a feature step in the "How it Works" section.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.step - The step number (e.g., "01").
+ * @param {string} props.title - The title of the feature.
+ * @param {string} props.desc - The description of the feature.
+ * @param {string} props.color - The Tailwind CSS class for the color theme.
+ * @returns {JSX.Element} The rendered FeatureCard component.
+ */
 function FeatureCard({ step, title, desc, color }) {
     return (
         <div className="relative p-8 rounded-3xl bg-slate-800/50 border border-white/5 overflow-hidden group hover:border-white/20 transition duration-300">

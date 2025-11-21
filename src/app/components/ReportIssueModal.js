@@ -6,6 +6,24 @@ import { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * A modal component for reporting civic issues.
+ *
+ * This component allows users to submit reports about various civic issues
+ * such as potholes, garbage, water leaks, etc. It supports:
+ * - Geolocation to automatically fetch the user's current location.
+ * - Image upload for evidence.
+ * - Categorization of issues.
+ * - Emergency flagging for high-priority issues.
+ * - Integration with Supabase for data persistence.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {Function} props.onClose - A callback function to be executed when the modal needs to be closed.
+ * @param {Function} [props.onIssueSubmitted] - An optional callback function to be executed after a successful issue submission.
+ * @param {boolean} [props.defaultEmergency=false] - Sets the initial state of the emergency toggle. Defaults to false.
+ * @returns {JSX.Element} The rendered ReportIssueModal component.
+ */
 export default function ReportIssueModal({ onClose, onIssueSubmitted, defaultEmergency = false }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -27,6 +45,16 @@ export default function ReportIssueModal({ onClose, onIssueSubmitted, defaultEme
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Handles the retrieval of the user's current geolocation.
+   *
+   * It uses the browser's Geolocation API to get the coordinates and then
+   * performs a reverse geocoding lookup using OpenStreetMap to get a human-readable address.
+   *
+   * @async
+   * @function handleGetLocation
+   * @returns {Promise<void>}
+   */
   const handleGetLocation = () => {
     if (!navigator.geolocation) { setError("Geolocation not supported"); return; }
     setLocationLoading(true);
@@ -44,6 +72,17 @@ export default function ReportIssueModal({ onClose, onIssueSubmitted, defaultEme
     });
   };
 
+  /**
+   * Handles the form submission.
+   *
+   * It uploads the selected image (if any) to Supabase Storage and then
+   * inserts the issue data into the Supabase 'issues' table.
+   *
+   * @async
+   * @function handleSubmit
+   * @param {React.FormEvent} e - The form event.
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUploading(true);

@@ -6,6 +6,20 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * The Sign Up Page component.
+ *
+ * This component handles the user registration process. It includes:
+ * - Collecting user information (Name, Username, Mobile, Email, Password).
+ * - Validating the input data (e.g., Indian mobile number validation).
+ * - Registering the user with Supabase Auth.
+ * - Creating a profile record in the 'profiles' table.
+ * - Handling email verification and auto-redirecting after verification.
+ * - Supporting both 'Citizen' and 'Authority' roles (visual context).
+ *
+ * @component
+ * @returns {JSX.Element} The rendered SignUpPage component.
+ */
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
     email: '',
@@ -30,6 +44,13 @@ export default function SignUpPage() {
   );
 
   // --- POLL FOR VERIFICATION ---
+  /**
+   * Polls for email verification status.
+   *
+   * If the user is in the verification pending state, this effect periodically
+   * checks if the user session has become active (meaning they clicked the email link).
+   * Upon verification, it redirects the user to the appropriate dashboard.
+   */
   useEffect(() => {
     let interval;
     if (verificationPending) {
@@ -45,16 +66,39 @@ export default function SignUpPage() {
   }, [verificationPending, role, router, supabase]);
 
 
+  /**
+   * Updates the form data state when inputs change.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The input change event.
+   */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(null);
   };
 
+  /**
+   * Validates if the given number is a valid Indian mobile number.
+   *
+   * @param {string} number - The mobile number to validate.
+   * @returns {boolean} True if valid, false otherwise.
+   */
   const isValidIndianMobile = (number) => {
     const regex = /^[6-9]\d{9}$/; 
     return regex.test(number);
   };
 
+  /**
+   * Handles the sign-up form submission.
+   *
+   * Performs validation, creates the user in Supabase Auth, and inserts
+   * the user profile data into the 'profiles' table. Handles both immediate
+   * login (if email confirmation is off) and verification pending state.
+   *
+   * @async
+   * @function handleSignUp
+   * @param {React.FormEvent} e - The form event.
+   * @returns {Promise<void>}
+   */
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);

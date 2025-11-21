@@ -10,6 +10,18 @@ import { motion } from 'framer-motion';
 
 const IssueMap = dynamic(() => import('../components/IssueMap'), { ssr: false });
 
+/**
+ * The Community Feed Page component.
+ *
+ * This page displays a public feed of all reported issues (excluding resolved ones)
+ * to foster community awareness. It allows users to:
+ * - View issues in a list or map format.
+ * - Verify or dispute reported issues to help with validation.
+ * - Visualize the location of issues on an interactive map.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered CommunityPage component.
+ */
 export default function CommunityPage() {
   const router = useRouter();
   const [issues, setIssues] = useState([]);
@@ -22,6 +34,13 @@ export default function CommunityPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Fetches community issues from Supabase.
+   *
+   * Retrieves all issues that are not 'Resolved', ordered by creation date.
+   *
+   * @async
+   */
   useEffect(() => {
     const fetchCommunityIssues = async () => {
       setLoading(true);
@@ -37,6 +56,18 @@ export default function CommunityPage() {
     fetchCommunityIssues();
   }, []);
 
+  /**
+   * Handles voting on an issue (Verify or Dispute).
+   *
+   * Allows authenticated users to cast a vote on an issue.
+   * Records the vote in the 'verifications' table and updates local state.
+   *
+   * @async
+   * @function handleVote
+   * @param {number|string} issueId - The ID of the issue being voted on.
+   * @param {boolean} isDispute - True if the vote is a dispute, false if it's a verification.
+   * @returns {Promise<void>}
+   */
   const handleVote = async (issueId, isDispute) => {
     if (votedIssues[issueId]) { alert("Already voted!"); return; }
     const { data: { user } } = await supabase.auth.getUser();
