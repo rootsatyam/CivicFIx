@@ -6,6 +6,28 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect } from 'react'; // Import useEffect
 
+/**
+ * A map component that displays reported civic issues using Leaflet.
+ *
+ * This component renders an interactive map with markers representing the location
+ * of reported issues. It handles:
+ * - Rendering a map using `react-leaflet`.
+ * - Displaying markers for each issue.
+ * - Showing a popup with issue details when a marker is clicked.
+ * - Fixing default icon issues associated with Leaflet in React.
+ * - Providing a fallback mechanism for issues with missing coordinates.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {Array<Object>} props.issues - An array of issue objects to be displayed on the map.
+ * @param {number} props.issues[].id - The unique identifier of the issue.
+ * @param {number} [props.issues[].latitude] - The latitude of the issue.
+ * @param {number} [props.issues[].longitude] - The longitude of the issue.
+ * @param {string} props.issues[].title - The title of the issue.
+ * @param {string} props.issues[].category - The category of the issue.
+ * @param {string} props.issues[].status - The status of the issue (e.g., 'Resolved', 'Pending').
+ * @returns {JSX.Element} The rendered IssueMap component.
+ */
 export default function IssueMap({ issues }) {
   const center = [23.3441, 85.3096]; 
 

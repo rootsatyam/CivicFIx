@@ -5,6 +5,22 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * The Admin Dashboard Page component.
+ *
+ * This page is restricted to users with the 'admin' role (Authorities).
+ * It provides a control room interface for:
+ * - Viewing all reported issues.
+ * - Filtering issues by status (All, Emergency, Submitted, In Progress, Resolved).
+ * - Viewing real-time statistics (Emergencies, Pending, Resolved).
+ * - Updating the status of issues.
+ * - Viewing issue locations on Google Maps.
+ *
+ * It uses Supabase Realtime to listen for new incoming issues.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered AdminPage component.
+ */
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -20,6 +36,13 @@ export default function AdminPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Fetches all issues from the database and calculates statistics.
+   *
+   * @async
+   * @function fetchIssues
+   * @returns {Promise<void>}
+   */
   const fetchIssues = async () => {
     const { data, error } = await supabase
       .from('issues')
@@ -39,6 +62,14 @@ export default function AdminPage() {
     setLoading(false);
   };
 
+  /**
+   * Checks for admin authorization and subscribes to real-time updates.
+   *
+   * On mount, it checks if the current user has the 'admin' role.
+   * If not, redirects to the dashboard or login.
+   * If authorized, it fetches issues and sets up a real-time subscription
+   * to the 'issues' table to listen for new inserts.
+   */
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -63,6 +94,18 @@ export default function AdminPage() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  /**
+   * Updates the status of a specific issue.
+   *
+   * Performs an optimistic update on the local state for immediate feedback,
+   * then updates the record in Supabase. Finally, it re-fetches issues to ensure consistency.
+   *
+   * @async
+   * @function updateStatus
+   * @param {number|string} id - The ID of the issue to update.
+   * @param {string} newStatus - The new status to set (e.g., 'Resolved', 'In Progress').
+   * @returns {Promise<void>}
+   */
   const updateStatus = async (id, newStatus) => {
     // Optimistic Update
     setIssues(issues.map(i => i.id === id ? { ...i, status: newStatus } : i));
@@ -226,6 +269,17 @@ export default function AdminPage() {
   );
 }
 
+/**
+ * A reusable card component for displaying statistics in the admin dashboard.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.label - The label text for the statistic.
+ * @param {string|number} props.value - The value to display.
+ * @param {string} props.color - The Tailwind CSS class for the icon background/color.
+ * @param {React.ReactNode} props.icon - The icon to display.
+ * @returns {JSX.Element} The rendered StatCard component.
+ */
 function StatCard({ label, value, color, icon }) {
     return (
         <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-5 flex items-center justify-between hover:bg-white/10 transition group">

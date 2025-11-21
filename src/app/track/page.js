@@ -7,6 +7,21 @@ import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
+/**
+ * The Track Issues Page component.
+ *
+ * This page allows users to track the status of the issues they have reported.
+ * It lists all issues submitted by the current user, ordered by submission date.
+ *
+ * Features:
+ * - Lists reported issues with details (title, description, status, category).
+ * - Visual progress indicator for issue resolution status.
+ * - Displays images and location information.
+ * - Empty state handling if no issues have been reported.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered TrackIssuesPage component.
+ */
 export default function TrackIssuesPage() {
   const router = useRouter();
   const [issues, setIssues] = useState([]);
@@ -17,6 +32,11 @@ export default function TrackIssuesPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Fetches the issues submitted by the current user.
+   *
+   * @async
+   */
   useEffect(() => {
     const fetchMyIssues = async () => {
       setLoading(true);
@@ -44,6 +64,12 @@ export default function TrackIssuesPage() {
   }, []);
 
   // Helper for status badges
+  /**
+   * Returns the CSS classes for the status badge based on the issue status.
+   *
+   * @param {string} status - The status of the issue ('Resolved', 'In Progress', etc.).
+   * @returns {string} The CSS class string.
+   */
   const getStatusStyle = (status) => {
     if (status === 'Resolved') return 'bg-green-500/20 text-green-300 border-green-500/50';
     if (status === 'In Progress') return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50';

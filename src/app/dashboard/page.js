@@ -1,3 +1,5 @@
+// File: app/dashboard/page.js
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,6 +8,21 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import ReportIssueModal from '../components/ReportIssueModal'; 
 
+/**
+ * The Dashboard Page component.
+ *
+ * This is the main hub for authenticated citizen users. It displays:
+ * - A personalized welcome message.
+ * - Quick statistics about the user's reported issues.
+ * - A grid of quick action buttons (Report, Track, Community, Rewards, Emergency).
+ * - A list of the user's recent activity.
+ * - A modal for reporting new issues.
+ *
+ * It handles fetching user data and real-time updates for issue statistics using Supabase.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered DashboardPage component.
+ */
 export default function DashboardPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +40,18 @@ export default function DashboardPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  /**
+   * Fetches the user's profile and dashboard data from Supabase.
+   *
+   * - Verifies authentication status.
+   * - Retrieves user profile details (username, full name).
+   * - Fetches counts for resolved and pending issues.
+   * - Fetches the 3 most recent issues reported by the user.
+   *
+   * @async
+   * @function fetchRealData
+   * @returns {Promise<void>}
+   */
   const fetchRealData = async () => {
     setIsLoading(true);
     try {
@@ -59,6 +88,12 @@ export default function DashboardPage() {
     } catch (error) { console.error('Error:', error); } finally { setIsLoading(false); }
   };
 
+  /**
+   * Initializes the dashboard data and sets up real-time subscription.
+   *
+   * Calls `fetchRealData` on mount and subscribes to changes in the 'issues' table
+   * to update the dashboard in real-time.
+   */
   useEffect(() => {
     fetchRealData();
     const channel = supabase.channel('dashboard-realtime')
@@ -67,6 +102,12 @@ export default function DashboardPage() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  /**
+   * Opens the report issue modal.
+   *
+   * @function openReport
+   * @param {boolean} emergency - Whether the report is an emergency.
+   */
   const openReport = (emergency) => {
       setIsEmergencyMode(emergency);
       setIsModalOpen(true);
@@ -167,6 +208,17 @@ export default function DashboardPage() {
   );
 }
 
+/**
+ * A reusable button component for the dashboard quick actions.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.color - The Tailwind CSS class for background color and hover effect.
+ * @param {string} props.label - The label text for the button.
+ * @param {Function} props.onClick - The click handler.
+ * @param {React.ReactNode} props.icon - The icon to display.
+ * @returns {JSX.Element} The rendered DashboardButton component.
+ */
 function DashboardButton({ color, label, onClick, icon }) {
   return (
     <button onClick={onClick} className={`flex flex-col items-center justify-center p-4 ${color} text-white rounded-2xl shadow-lg transition transform hover:scale-105 border border-white/5 backdrop-blur-sm`}>
@@ -176,6 +228,18 @@ function DashboardButton({ color, label, onClick, icon }) {
   );
 }
 
+/**
+ * A reusable card component for displaying statistics.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.label - The label for the statistic.
+ * @param {string|number} props.value - The value of the statistic.
+ * @param {React.ReactNode} props.icon - The icon to display.
+ * @param {string} props.color - The text color class for the icon.
+ * @param {string} props.bg - The background style class.
+ * @returns {JSX.Element} The rendered StatsCard component.
+ */
 function StatsCard({ label, value, icon, color, bg }) {
     return (
       <div className={`p-6 rounded-2xl flex items-center justify-between backdrop-blur-md ${bg} border`}>
